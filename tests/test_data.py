@@ -1,6 +1,10 @@
 from pathlib import Path
 
-from tinylm.data import load_corpus
+import pytest
+
+from tinylm.data import Vocab, load_corpus
+
+WORDS = ["emma", "olivia", "ava"]
 
 
 def test_load_corpus_drops_blank_lines(tmp_path: Path) -> None:
@@ -8,3 +12,32 @@ def test_load_corpus_drops_blank_lines(tmp_path: Path) -> None:
     path.write_text("a\n\nb\n", encoding="utf-8")
 
     assert load_corpus(path) == ["a", "b"]
+
+
+def test_size_is_distinct_chars_plus_one() -> None:
+    size_v = len(Vocab(WORDS))
+    exp_size = len(set("".join(WORDS))) + 1
+    assert size_v == exp_size
+
+
+def test_boundary_is_index_0() -> None:
+    assert Vocab(WORDS).decode([0]) == "."
+
+
+def test_round_trip() -> None:
+    v = Vocab(WORDS)
+    for w in WORDS:
+        assert v.decode(v.encode(w)) == w
+
+
+def test_encode_give_ids() -> None:
+    v = Vocab(WORDS)
+    ids = v.encode("ava")
+    assert len(ids) == 3
+    assert all(isinstance(i, int) for i in ids)
+    assert 0 not in ids
+
+
+def test_boundary_in_corpus_rejected() -> None:
+    with pytest.raises(ValueError):
+        Vocab(["a.b"])
