@@ -41,3 +41,7 @@ def test_encode_give_ids() -> None:
 def test_boundary_in_corpus_rejected() -> None:
     with pytest.raises(ValueError):
         Vocab(["a.b"])
+
+
+def test_custom_boundary_is_index_0() -> None:
+    assert Vocab(["ab"], boundary="~").decode([0]) == "~"
