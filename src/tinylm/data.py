@@ -1,3 +1,4 @@
+import random
 from pathlib import Path
 
 
@@ -35,3 +36,16 @@ class Vocab:
 
     def decode(self, ids: list[int]) -> str:
         return "".join(self.itos[d] for d in ids)
+
+
+def split(words: list[str], seed: int) -> tuple[list[str], list[str], list[str]]:
+    """Shuffle a copy of `words` with a private generator seeded by `seed`; cut 80/10/10.
+
+    Returns (train, validation, test). The input list is not modified.
+    """
+    shuffled = list(words)
+    random.Random(seed).shuffle(shuffled)
+    n = len(shuffled)
+    train_end = int(n * 0.8)
+    val_end = int(n * 0.9)
+    return shuffled[:train_end], shuffled[train_end:val_end], shuffled[val_end:]
